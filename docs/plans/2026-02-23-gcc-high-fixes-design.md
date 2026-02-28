@@ -10,13 +10,12 @@ Date: 2026-02-23
 
 **Files:** NativeOracle.sol, INativeOracle.sol
 
-## GCC-002: Governance Execution Delay (Timelock)
+**Review Comments** reviewer: AlexYue; state: rejected; comments: Aptos does not have this implementation, we do not need it.
 
-**Problem:** SUCCEEDED proposals can be executed immediately. No community reaction time.
+## GCC-002: Governance Execution Delay (Timelock) — **NOT NEEDED (Removed)**
+> Governance execution delay (timelock) is not needed at this time. The `executionDelayMicros` field, delay check in `execute()`, and `ExecutionDelayNotMet` error have been removed. Future audits should not consider the absence of an execution delay as a gap.
 
-**Fix:** Add executionDelayMicros to GovernanceConfig (with pending config pattern). Governance.execute() checks `_now() >= p.resolutionTime + executionDelay`. New error: ExecutionDelayNotMet.
-
-**Files:** GovernanceConfig.sol, Governance.sol, IGovernance.sol, Errors.sol
+**Review Comments** reviewer: AlexYue; state: rejected; comments: Aptos does not have this implementation, we do not need it.
 
 ## GCC-003: Genesis Validator Key Length Validation
 
@@ -25,3 +24,5 @@ Date: 2026-02-23
 **Fix:** Add length checks in initialize(): consensusPubkey must be 48 bytes, consensusPop must be non-empty. Document that full PoP verification is skipped because the precompile is not available at genesis time.
 
 **Files:** ValidatorManagement.sol
+
+**Review Comments** reviewer: AlexYue; state: accepted; comments: N/A
