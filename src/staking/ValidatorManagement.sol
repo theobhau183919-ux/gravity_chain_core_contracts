@@ -44,6 +44,12 @@ contract ValidatorManagement is IValidatorManagement {
     /// @notice Maximum moniker length in bytes
     uint256 public constant MAX_MONIKER_LENGTH = 31;
 
+    /// @notice Maximum network addresses blob length in bytes
+    uint256 public constant MAX_NETWORK_ADDRESSES_LENGTH = 256;
+
+    /// @notice Maximum fullnode addresses blob length in bytes
+    uint256 public constant MAX_FULLNODE_ADDRESSES_LENGTH = 256;
+
     /// @notice Expected BLS12-381 G1 compressed public key length in bytes
     uint256 public constant BLS12381_PUBKEY_LENGTH = 48;
 
@@ -160,6 +166,12 @@ contract ValidatorManagement is IValidatorManagement {
         if (v.consensusPop.length == 0) {
             revert Errors.InvalidConsensusPopLength();
         }
+        if (v.networkAddresses.length > MAX_NETWORK_ADDRESSES_LENGTH) {
+            revert Errors.NetworkAddressesTooLong(MAX_NETWORK_ADDRESSES_LENGTH, v.networkAddresses.length);
+        }
+        if (v.fullnodeAddresses.length > MAX_FULLNODE_ADDRESSES_LENGTH) {
+            revert Errors.FullnodeAddressesTooLong(MAX_FULLNODE_ADDRESSES_LENGTH, v.fullnodeAddresses.length);
+        }
 
         // Create validator record
         ValidatorRecord storage record = _validators[v.stakePool];
@@ -245,7 +257,7 @@ contract ValidatorManagement is IValidatorManagement {
         }
 
         // Validate inputs and get required data
-        _validateRegistration(stakePool, moniker);
+        _validateRegistration(stakePool, moniker, networkAddresses, fullnodeAddresses);
 
         // Create validator record
         _createValidatorRecord(stakePool, moniker, consensusPubkey, consensusPop, networkAddresses, fullnodeAddresses);
@@ -256,7 +268,9 @@ contract ValidatorManagement is IValidatorManagement {
     /// @notice Validate registration inputs
     function _validateRegistration(
         address stakePool,
-        string calldata moniker
+        string calldata moniker,
+        bytes calldata networkAddresses,
+        bytes calldata fullnodeAddresses
     ) internal view {
         // Verify stake pool is valid (created by Staking factory)
         if (!IStaking(SystemAddresses.STAKING).isPool(stakePool)) {
@@ -288,6 +302,12 @@ contract ValidatorManagement is IValidatorManagement {
         // Verify moniker length
         if (bytes(moniker).length > MAX_MONIKER_LENGTH) {
             revert Errors.MonikerTooLong(MAX_MONIKER_LENGTH, bytes(moniker).length);
+        }
+        if (networkAddresses.length > MAX_NETWORK_ADDRESSES_LENGTH) {
+            revert Errors.NetworkAddressesTooLong(MAX_NETWORK_ADDRESSES_LENGTH, networkAddresses.length);
+        }
+        if (fullnodeAddresses.length > MAX_FULLNODE_ADDRESSES_LENGTH) {
+            revert Errors.FullnodeAddressesTooLong(MAX_FULLNODE_ADDRESSES_LENGTH, fullnodeAddresses.length);
         }
     }
 
