@@ -95,10 +95,10 @@ contract GBridgeReceiver is IGBridgeReceiver, BlockchainEventHandler {
         // Mark nonce as processed BEFORE minting (CEI pattern)
         _processedNonces[messageNonce] = true;
 
-        // Mint native tokens via precompile (precompile never reverts)
-        bytes memory callData = abi.encodePacked(uint8(0x01), recipient, amount);
-        (bool transferSuccess,) = SystemAddresses.NATIVE_MINT_PRECOMPILE.call(callData);
-        if (!transferSuccess) {
+        // Mint native tokens via ABI-compatible precompile interface
+        try INativeMintPrecompile(SystemAddresses.NATIVE_MINT_PRECOMPILE).mint(recipient, amount) {
+            // no-op
+        } catch {
             revert MintFailed(recipient, amount);
         }
 
@@ -119,4 +119,3 @@ contract GBridgeReceiver is IGBridgeReceiver, BlockchainEventHandler {
         return _processedNonces[nonce];
     }
 }
-
