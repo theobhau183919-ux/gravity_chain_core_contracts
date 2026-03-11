@@ -45,12 +45,11 @@ contract GBridgeReceiverTest is Test {
         bob = makeAddr("bob");
 
         // Mock the precompile call to always succeed
-        // GBridgeReceiver uses low-level call:
-        // NATIVE_MINT_PRECOMPILE.call(abi.encodePacked(uint8(0x01), recipient, amount))
-        // We mock any call to this address to return (true, "")
-        bytes memory emptyData = "";
+        // GBridgeReceiver calls the ABI mint function on the precompile.
+        // Mock by selector prefix so any recipient/amount succeeds.
+        bytes memory mintSelector = abi.encodeWithSelector(INativeMintPrecompile.mint.selector);
         bytes memory successReturn = "";
-        vm.mockCall(SystemAddresses.NATIVE_MINT_PRECOMPILE, emptyData, successReturn);
+        vm.mockCall(SystemAddresses.NATIVE_MINT_PRECOMPILE, mintSelector, successReturn);
 
         // Deploy receiver with trusted bridge
         receiver = new GBridgeReceiver(trustedBridge, ETHEREUM_SOURCE_ID);
