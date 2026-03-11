@@ -15,8 +15,8 @@ import { ITimestamp } from "./ITimestamp.sol";
 /// @dev Manages DKG session lifecycle for epoch transitions.
 ///      The consensus engine listens for DKGStartEvent to begin off-chain DKG.
 ///      Only RECONFIGURATION can start/finish sessions.
-///      Note: Full validator arrays are emitted in events only (not stored in contract state)
-///      to avoid storage limitations with dynamic arrays.
+///      Full validator arrays are emitted in events and intentionally not persisted,
+///      preventing unbounded validator metadata from exhausting gas during storage writes.
 contract DKG is IDKG {
     // ========================================================================
     // STATE
@@ -82,24 +82,27 @@ contract DKG is IDKG {
         // Get current timestamp from Timestamp contract
         uint64 startTimeUs = _getCurrentTimeMicros();
 
-        // Store full session info on-chain
+        // Store bounded session info on-chain
         // TODO(lightman): validator's voting power needs to be uint64 on the consensus engine.
         _inProgress.metadata.dealerEpoch = dealerEpoch;
         _inProgress.metadata.randomnessConfig = randomnessConfig;
         _inProgress.startTimeUs = startTimeUs;
         _inProgress.transcript = "";
-        // Copy validator arrays
+        // Never persist full validator metadata arrays in storage.
         delete _inProgress.metadata.dealerValidatorSet;
-        for (uint256 i = 0; i < dealerValidatorSet.length; i++) {
-            _inProgress.metadata.dealerValidatorSet.push(dealerValidatorSet[i]);
-        }
         delete _inProgress.metadata.targetValidatorSet;
-        for (uint256 i = 0; i < targetValidatorSet.length; i++) {
-            _inProgress.metadata.targetValidatorSet.push(targetValidatorSet[i]);
-        }
         hasInProgress = true;
 
-        emit DKGStartEvent(dealerEpoch, startTimeUs, _inProgress.metadata);
+        emit DKGStartEvent(
+            dealerEpoch,
+            startTimeUs,
+            IDKG.DKGSessionMetadata({
+                dealerEpoch: dealerEpoch,
+                randomnessConfig: randomnessConfig,
+                dealerValidatorSet: dealerValidatorSet,
+                targetValidatorSet: targetValidatorSet
+            })
+        );
     }
 
     /// @notice Complete a DKG session with the generated transcript
