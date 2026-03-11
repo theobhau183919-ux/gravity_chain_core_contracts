@@ -250,6 +250,28 @@ contract ValidatorManagementTest is Test {
         );
     }
 
+    function test_RevertWhen_registerValidator_networkAddressesTooLong() public {
+        address pool = _createStakePool(alice, MIN_BOND);
+        bytes memory longNetworkAddresses = new bytes(257);
+
+        vm.prank(alice);
+        vm.expectRevert(abi.encodeWithSelector(Errors.NetworkAddressesTooLong.selector, 256, 257));
+        validatorManager.registerValidator(
+            pool, "alice", CONSENSUS_PUBKEY, CONSENSUS_POP, longNetworkAddresses, FULLNODE_ADDRESSES
+        );
+    }
+
+    function test_RevertWhen_registerValidator_fullnodeAddressesTooLong() public {
+        address pool = _createStakePool(alice, MIN_BOND);
+        bytes memory longFullnodeAddresses = new bytes(257);
+
+        vm.prank(alice);
+        vm.expectRevert(abi.encodeWithSelector(Errors.FullnodeAddressesTooLong.selector, 256, 257));
+        validatorManager.registerValidator(
+            pool, "alice", CONSENSUS_PUBKEY, CONSENSUS_POP, NETWORK_ADDRESSES, longFullnodeAddresses
+        );
+    }
+
     /// @notice Test revert when validator set changes are disabled
     function test_RevertWhen_registerValidator_validatorSetChangesDisabled() public {
         // Disable validator set changes via pending pattern

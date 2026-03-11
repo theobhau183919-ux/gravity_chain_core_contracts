@@ -168,6 +168,16 @@ library Errors {
     /// @param actualLength Actual moniker length
     error MonikerTooLong(uint256 maxLength, uint256 actualLength);
 
+    /// @notice Network addresses blob exceeds maximum allowed length
+    /// @param maxLength Maximum allowed length in bytes
+    /// @param actualLength Actual blob length in bytes
+    error NetworkAddressesTooLong(uint256 maxLength, uint256 actualLength);
+
+    /// @notice Fullnode addresses blob exceeds maximum allowed length
+    /// @param maxLength Maximum allowed length in bytes
+    /// @param actualLength Actual blob length in bytes
+    error FullnodeAddressesTooLong(uint256 maxLength, uint256 actualLength);
+
     /// @notice Unbond period has not elapsed
     /// @param availableAt When the unbond becomes available (microseconds)
     /// @param currentTime Current timestamp (microseconds)
@@ -516,4 +526,3 @@ library Errors {
     /// @notice Operation is not supported
     error OperationNotSupported();
 }
-
